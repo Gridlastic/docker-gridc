@@ -32,7 +32,8 @@ Configure your tunnel via environment variables (via `-e`):
   * `GRIDC_SUBDOMAIN` - Is used to create the endpoint for your selenium grid nodes. Must be unique (real time) per selenium grid and a valid single DNS string (no dots and max 63 characters) to avoid tunnel name conflicts. Subdomains are associated with protocol `http` and `https`. If not specified a random value is assigned by the server.   
   * `GRIDC_ADDR_DOMAIN` - Domain name/IP/docker container name of service to tunnel to, leave empty if service is on `localhost`.
   * `GRIDC_ADDR_PORT` - Port of service to tunnel to, like `80`
-  * `GRIDC_HUB` - Port to tunnel to your Gridlastic selenium grid hub, like `3000`. Optional.
+  * `GRIDC_HUB` - Port to tunnel to your Gridlastic selenium grid hub, like `4444`. Optional.
+  * `GRIDC_API` - Activates client [Rest API][gridlastic-connect-api] on port, like `3030`. Optional.
   * `GRIDC_START_CONFIG_TUNNELS` - If set to `all` starts all defined tunnels in the configuration file. Specify individual tunnels for selective starts like `-e "GRIDC_START_CONFIG_TUNNELS=tunnel-1 tunnel-2"`. Note: special behavior with `GRIDC_CONFIG_SUBDOMAIN_UUID_PREFIX`
   * `GRIDC_CONFIG_SUBDOMAIN_UUID_PREFIX` - Use this variable to create unique subdomain endpoints. If empty defaults to `$HOSTNAME` (container ID) when used with `GRIDC_START_CONFIG_TUNNELS`. Tip: start the container(s) from your test runner with your own unique subdomain prefix that you can use in your selenium tests.
 
@@ -72,7 +73,7 @@ tunnels:
       https: host.docker.internal:8001
 ```
 
-Note that the line `server_addr: ${GRIDC_ENDPOINT_SUBDOMAIN}.gridlastic.com:443` must always be present in any custom config file and is the only line in the default `config-template.cfg`. The variable `GRIDC_CONFIG_SUBDOMAIN_UUID_PREFIX` has special behavior when used with `GRIDC_START_CONFIG_TUNNELS`, see environmental variables. Also, you can provide the credentials in the config file although we recommend you use environment variables. http_proxy can be used to reach Gridlastic via a corporate proxy.
+Note that the line `server_addr: ${GRIDC_ENDPOINT_SUBDOMAIN}.gridlastic.com:443` must always be present in any custom config file and is the only line in the default `config-template.cfg`. The variable `GRIDC_CONFIG_SUBDOMAIN_UUID_PREFIX` has special behavior when used with `GRIDC_START_CONFIG_TUNNELS`, see environmental variables. Also, you can provide the credentials in the config file although we recommend you use environment variables. http_proxy can be used to reach Gridlastic via a corporate proxy. An alternative to creating tunnels using a configuration file is to use the [Rest API][gridlastic-connect-api]. 
 
 
 
@@ -106,7 +107,7 @@ Firefox (profile):
     $ profile.setAcceptUntrustedCertificates(true);
 
 
-Note that this method is for internal direct IP https sites with no redirects etc. To test production/other remote sites see [Github repo docker-gridc-squid][docker-gridc-squid]. Keep in mind that unlike subdomains which have unlimited unique endpoint capability, tcp ports are limited and must also be coordinated to avoid tunnel conflicts if they are specifically requested in the config file. Leave `remote_port:` empty in the config file for randomly assigned. Read more about [Gridlastic Connect tcp tunneling][gridlastic-connect-tcp].
+Note that this method is for internal direct IP https sites with no redirects etc. To test production/other remote sites see [Github repo docker-gridc-squid][docker-gridc-squid]. Keep in mind that unlike subdomains which have unlimited unique endpoint capability, tcp ports are limited and must also be coordinated to avoid tunnel conflicts if they are specifically requested in the config file. Leave `remote_port:` empty in the config file for randomly assigned. An alternative to creating tunnels using a configuration file is to use the [Rest API][gridlastic-connect-api].  Read more about [Gridlastic Connect TCP tunneling][gridlastic-connect-tcp].
 
 ## Test a remote https site using a standard forwarding proxy like Squid
 
@@ -203,23 +204,19 @@ Will create 3 web site containers and 3 gridc containers with 3 tunnel endpoints
     $ driver().get("https://x-y-z-test-web-site-1.<GRIDC_ENDPOINT_SUBDOMAIN>.gridlastic.com:8091");
     $ driver().get("https://x-y-z-test-web-site-2.<GRIDC_ENDPOINT_SUBDOMAIN>.gridlastic.com:8091");
     
- In this example you could also specify all 3 tunnels in the config file and use a single gridc container.
+ In this example you could also specify all 3 tunnels in the config file and use a single gridc container. You can also [programmatically][gridlastic-connect-api] create tunnels using just one client. 
     
 
 
 
 
 
-## Start an empty gridc (no tunnels defined in config file) 
+## Use the Client Rest API to create tunnels on the fly 
 
-    $ docker run --rm -it --name gridc-no-initial-tunnels -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_START_CONFIG_TUNNELS=all gridlastic/docker-gridc
-    
-and then in a test runner start tunnels on the fly using unique subdomains that are also used in the tests, like
-
-    $ docker exec -it gridc-no-initial-tunnels gridc -proto https -subdomain=another-tunnel-to-hostmachine-port-8001 host.docker.internal:8001
+    $ docker run --rm -it -p 3030:3030 --name gridc-api-endpoint -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_API=3030 gridlastic/docker-gridc
 
     
-Read more about gridc commands available for [Gridlastic Connect][gridlastic-connect].
+Read more about how to use the [Rest API][gridlastic-connect-api].
 
 
 ## Start the selenium grid hub endpoint in its own container
@@ -227,7 +224,7 @@ Read more about gridc commands available for [Gridlastic Connect][gridlastic-con
 
     $ docker run --rm -it -p 4444:4444 --name gridc-hub-endpoint -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_HUB=4444 gridlastic/docker-gridc
 
-Hub API access endpoint in your selenium code becomes `http://<USERNAME:ACCESS_KEY>@localhost:4444/wd/hub` or access the grid console like `http://localhost:4444/grid/console`. 
+Hub API access endpoint in your selenium code becomes `http://<USERNAME:ACCESS_KEY>@localhost:4444/wd/hub` or if you started your grid with the option "Gridlastic Connect Hub Endpoint" selected to "hub credentials disabled" you can drop the credentials and use `http://localhost:4444/wd/hub`. Access the grid console like `http://localhost:4444/grid/console`. 
 
 
 
@@ -240,6 +237,7 @@ Report issues/questions/feature requests at `support@gridlastic.com`.
 [gridlastic]:       	https://www.gridlastic.com/
 [gridlastic-connect]:	https://www.gridlastic.com/gridlastic-connect.html
 [gridlastic-connect-tcp]:	https://www.gridlastic.com/gridlastic-connect.html#tcp
+[gridlastic-connect-api]:	https://www.gridlastic.com/gridlastic-connect.html#dynamic_tunnel_creation
 [alpine]:				https://registry.hub.docker.com/_/alpine
 [docker-gridc]:   		https://github.com/gridlastic/docker-gridc
 [docker-gridc-squid]:   https://github.com/gridlastic/docker-gridc-squid

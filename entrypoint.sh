@@ -24,6 +24,10 @@ if [ -n "$GRIDC_HUB" ]; then
   GRIDC_COMMAND="$GRIDC_COMMAND -hub $GRIDC_HUB"
 fi
 
+# Client API
+if [ -n "$GRIDC_API" ]; then
+  GRIDC_COMMAND="$GRIDC_COMMAND -api $GRIDC_API"
+fi
 
 # Config file
 GRIDC_COMMAND="$GRIDC_COMMAND -config=/home/gridc/.gridc/gridc.cfg"
@@ -83,6 +87,11 @@ if [ -n "$GRIDC_HUB" ]; then
   GRIDC_COMMAND="$GRIDC_COMMAND -hub $GRIDC_HUB"
 fi
 
+
+# Client API
+if [ -n "$GRIDC_API" ]; then
+  GRIDC_COMMAND="$GRIDC_COMMAND -api $GRIDC_API"
+fi
 
 
 if [ -n "$GRIDC_ADDR_DOMAIN" ]; then

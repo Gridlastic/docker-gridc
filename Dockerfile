@@ -30,7 +30,7 @@ RUN set -x \
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh 
 
-ADD https://www.gridlastic.com/downloads/c2/gridc-1.2-linux_64.tar.gz /home/gridc/gridc.tar.gz
+ADD https://www.gridlastic.com/downloads/c2/gridc-1.3-linux_64.tar.gz /home/gridc/gridc.tar.gz
 RUN cd /home/gridc \
  && tar xfvz gridc.tar.gz gridc \
  && rm gridc.tar.gz \
