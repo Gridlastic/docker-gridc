@@ -213,10 +213,10 @@ Will create 3 web site containers and 3 gridc containers with 3 tunnel endpoints
 
 ## Use the Client Rest API to create tunnels on the fly 
 
-    $ docker run --rm -it -p 3030:3030 --name gridc-api-endpoint -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_API=3030 gridlastic/docker-gridc
+    $ docker run --rm -it -p 3030:3030 --name gridc-api-endpoint -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_API=3030 -e GRIDC_START_CONFIG_TUNNELS=all  gridlastic/docker-gridc
 
     
-Read more about how to use the [Rest API][gridlastic-connect-api].
+Note: unless the `GRIDC_API` parameter is passed along with tunnel parameters or the `GRIDC_HUB` parameter, the parameter `GRIDC_START_CONFIG_TUNNELS` must be set to `all`. Read more about how to use the [Rest API][gridlastic-connect-api].
 
 
 ## Start the selenium grid hub endpoint in its own container
