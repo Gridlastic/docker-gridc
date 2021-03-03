@@ -10,9 +10,9 @@ Securely connect your private [Gridlastic][gridlastic] selenium grid to your tes
 
 ## Quick demo start for Docker Desktop MAC/Windows
 
-    $ docker run --rm -it --name running-gridc -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_PROTOCOL=https -e GRIDC_SUBDOMAIN=hostmachine-hello-world -e GRIDC_ADDR_DOMAIN=host.docker.internal -e GRIDC_ADDR_PORT=8001 gridlastic/docker-gridc
+    $ docker run --rm -it -p 3030:3030 --name running-gridc -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_PROTOCOL=https -e GRIDC_SUBDOMAIN=hostmachine-hello-world -e GRIDC_ADDR_DOMAIN=host.docker.internal -e GRIDC_ADDR_PORT=8001 -e GRIDC_API=3030 gridlastic/docker-gridc
 
-Gridlastic credentials `GRIDC_ENDPOINT_SUBDOMAIN`, `GRIDC_USERNAME` and `GRIDC_ACCESS_KEY` available after launch of selenium grid. On the host machine, creates a tunnel to a site (existing or not) on `localhost:8001`. If you have a site active on `localhost:8001` you can run tests to it or start a site on port `8001` like
+The above docker command can be copied pre-filled with credentials from your Gridlastic dashboard after grid launch. The credentials `GRIDC_ENDPOINT_SUBDOMAIN`, `GRIDC_USERNAME` and `GRIDC_ACCESS_KEY` are all available after launch of your Gridlastic selenium grid. On the host machine, creates a tunnel to a site (existing or not) on `localhost:8001`. If you have a site active on `localhost:8001` you can run tests to it or start a site on port `8001` like
 
     $ docker run --rm -p 8001:80 --detach --name test-gridc-site gridlastic/docker-hello-world
 
@@ -20,6 +20,13 @@ To tunnel to the test site use this in your selenium test code:
 
     $ driver().get("https://hostmachine-hello-world.<GRIDC_ENDPOINT_SUBDOMAIN>.gridlastic.com:8091");
     
+
+Use the client [Rest API][gridlastic-connect-api] to dynamically create more tunnels or get active tunnels like:
+
+```
+http://localhost:3030/api/tunnels
+```
+
 
 ## Environment variables
 
@@ -29,7 +36,7 @@ Configure your tunnel via environment variables (via `-e`):
   * `GRIDC_USERNAME` - Gridlastic username, see your Gridlastic dashboard after you launched your grid. 
   * `GRIDC_ACCESS_KEY` - Gridlastic access key, see your Gridlastic dashboard after you launched your grid. 
   * `GRIDC_PROTOCOL` - Can be `https`, `http`  or `tcp`. If set to `tcp`, Gridlastic Connect will allocate a port instead of a subdomain and proxy TCP requests directly to your application. Endpoint access for `https` is on port `8091` and for `http` port `8090`
-  * `GRIDC_SUBDOMAIN` - Is used to create the endpoint for your selenium grid nodes. Must be unique (real time) per selenium grid and a valid single DNS string (no dots and max 63 characters) to avoid tunnel name conflicts. Subdomains are associated with protocol `http` and `https`. If not specified a random value is assigned by the server.   
+  * `GRIDC_SUBDOMAIN` - Is used to create the endpoint for your selenium grid nodes. Must be unique (real time) per selenium grid and a valid single DNS string (no dots and 3-63 characters) to avoid tunnel name conflicts. Subdomains are associated with protocol `http` and `https`. If not specified a random value is assigned by the server. 
   * `GRIDC_ADDR_DOMAIN` - Domain name/IP/docker container name of service to tunnel to, leave empty if service is on `localhost`.
   * `GRIDC_ADDR_PORT` - Port of service to tunnel to, like `80`
   * `GRIDC_HUB` - Port to tunnel to your Gridlastic selenium grid hub, like `4444`. Optional.
@@ -37,6 +44,8 @@ Configure your tunnel via environment variables (via `-e`):
   * `GRIDC_START_CONFIG_TUNNELS` - If set to `all` starts all defined tunnels in the configuration file. Specify individual tunnels for selective starts like `-e "GRIDC_START_CONFIG_TUNNELS=tunnel-1 tunnel-2"`. Note: special behavior with `GRIDC_CONFIG_SUBDOMAIN_UUID_PREFIX`
   * `GRIDC_CONFIG_SUBDOMAIN_UUID_PREFIX` - Use this variable to create unique subdomain endpoints. If empty defaults to `$HOSTNAME` (container ID) when used with `GRIDC_START_CONFIG_TUNNELS`. Tip: start the container(s) from your test runner with your own unique subdomain prefix that you can use in your selenium tests.
 
+
+## EXAMPLES
 
 ## Start an additional gridc/tunnel container linking to the docker-hello-world container above, accessing the site on internal container port 80
 
