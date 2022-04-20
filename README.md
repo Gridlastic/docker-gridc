@@ -12,7 +12,7 @@ Securely connect your private [Gridlastic][gridlastic] selenium grid to your tes
 
     $ docker run --rm -it -p 3030:3030 --name running-gridc -e GRIDC_ENDPOINT_SUBDOMAIN= -e GRIDC_USERNAME= -e GRIDC_ACCESS_KEY= -e GRIDC_PROTOCOL=https -e GRIDC_SUBDOMAIN=hostmachine-hello-world -e GRIDC_ADDR_DOMAIN=host.docker.internal -e GRIDC_ADDR_PORT=8001 -e GRIDC_API=3030 gridlastic/docker-gridc
 
-The above docker command can be copied pre-filled with credentials from your Gridlastic dashboard after grid launch. The credentials `GRIDC_ENDPOINT_SUBDOMAIN`, `GRIDC_USERNAME` and `GRIDC_ACCESS_KEY` are all available after launch of your Gridlastic selenium grid. On the host machine, creates a tunnel to a site (existing or not) on `localhost:8001`. If you have a site active on `localhost:8001` you can run tests to it or start a site on port `8001` like
+The above docker command can be copied pre-filled with credentials from your Gridlastic dashboard after grid launch. The credentials `GRIDC_ENDPOINT_SUBDOMAIN`, `GRIDC_USERNAME` and `GRIDC_ACCESS_KEY` are all available after launch of your Gridlastic selenium grid. On the host machine, creates a tunnel to a docker container site (existing or not) on `host.docker.internal:8001`. If you have a site active on `host.docker.internal:8001` you can run tests to it or start a site on port `8001` like
 
     $ docker run --rm -p 8001:80 --detach --name test-gridc-site gridlastic/docker-hello-world
 
@@ -27,6 +27,7 @@ Use the client [Rest API][gridlastic-connect-api] to dynamically create more tun
 http://localhost:3030/api/tunnels
 ```
 
+NOTE: this example is using Docker so if you have a local non Docker site you need to [download and install the native gridc client][gridlastic-connect] in order to reach it because the gridc client can only reach sites that the machine/container it was deployed on can reach.
 
 ## Environment variables
 
@@ -37,7 +38,7 @@ Configure your tunnel via environment variables (via `-e`):
   * `GRIDC_ACCESS_KEY` - Gridlastic access key, see your Gridlastic dashboard after you launched your grid. 
   * `GRIDC_PROTOCOL` - Can be `https`, `http`  or `tcp`. If set to `tcp`, Gridlastic Connect will allocate a port instead of a subdomain and proxy TCP requests directly to your application. Endpoint access for `https` is on port `8091` and for `http` port `8090`
   * `GRIDC_SUBDOMAIN` - Is used to create the endpoint for your selenium grid nodes. Must be unique (real time) per selenium grid and a valid single DNS string (no dots and 3-63 characters) to avoid tunnel name conflicts. Subdomains are associated with protocol `http` and `https`. If not specified a random value is assigned by the server. 
-  * `GRIDC_ADDR_DOMAIN` - Domain name/IP/docker container name of service to tunnel to, leave empty if service is on `localhost`.
+  * `GRIDC_ADDR_DOMAIN` - host.docker.internal or container name.
   * `GRIDC_ADDR_PORT` - Port of service to tunnel to, like `80`
   * `GRIDC_HUB` - Port to tunnel to your Gridlastic selenium grid hub, like `4444`. Optional.
   * `GRIDC_API` - Activates client [Rest API][gridlastic-connect-api] on port, like `3030`. Optional.
